@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c62828">
+  <title>日本の運転免許クイズ | Japan Driving Quiz · Bangla</title>
+  <style>
+    :root {
+      --red:#c62828; --red-dark:#a51f1f; --ink:#20232a; --muted:#68707d;
+      --paper:#fff; --bg:#f5f6f8; --line:#e4e6eb; --card:#fff;
+      --green:#18794e; --green-bg:#e7f6ee; --wrong:#b42318;
+      --wrong-bg:#fff0ef; --shadow:0 8px 26px rgba(30,35,45,.07);
+    }
+    body.dark {
+      --ink:#f3f4f6; --muted:#b0b8c5; --paper:#17191e; --bg:#101216;
+      --line:#30343c; --card:#1b1e24; --green:#70d6a1; --green-bg:#173327;
+      --wrong:#ff8e86; --wrong-bg:#3a201f; --shadow:0 8px 26px rgba(0,0,0,.22);
+    }
+    * { box-sizing:border-box }
+    body {
+      margin:0; color:var(--ink); background:var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",
+        "Noto Sans JP",sans-serif; line-height:1.6;
+    }
+    button { font:inherit; cursor:pointer }
+    .topbar { position:sticky; top:0; z-index:2; background:var(--paper); border-bottom:4px solid var(--red) }
+    .topbar-inner { max-width:900px; margin:auto; padding:12px 16px; display:flex; align-items:center; gap:12px }
+    .flag { width:42px; height:28px; flex:none; border:1px solid #ddd; border-radius:4px;
+      background:radial-gradient(circle,#bc002d 0 8px,white 8.5px) }
+    .brand { flex:1 }
+    .brand h1 { font-size:1.02rem; line-height:1.25; margin:0 }
+    .brand small { color:var(--muted) }
+    .button {
+      border:1px solid var(--line); border-radius:10px; padding:9px 13px;
+      color:var(--ink); background:var(--card); font-weight:650;
+    }
+    .button:hover { border-color:var(--red) }
+    .button.primary { background:var(--red); border-color:var(--red); color:#fff }
+    main { max-width:900px; margin:auto; padding:22px 16px 48px }
+    .hero,.panel,.quiz-card {
+      background:var(--card); border:1px solid var(--line); border-radius:16px;
+      padding:20px; box-shadow:var(--shadow); margin-bottom:16px;
+    }
+    h2 { font-size:1.35rem; margin:0 0 8px }
+    h3 { margin:0 0 10px }
+    .muted { color:var(--muted) }
+    .notice { padding:12px; border-left:4px solid #d88a00; background:var(--card);
+      border-radius:8px; margin:14px 0 }
+    .progress-wrap { margin-top:12px }
+    .progress-label { display:flex; justify-content:space-between; gap:10px; font-size:.92rem }
+    progress { width:100%; height:12px; accent-color:var(--red) }
+    .choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px }
+    .choice-card { text-align:left; color:var(--ink); background:var(--card);
+      border:1px solid var(--line); border-radius:14px; padding:18px; min-height:110px }
+    .choice-card:hover { border-color:var(--red); transform:translateY(-1px) }
+    .choice-card strong { display:block; font-size:1.08rem; margin-bottom:4px }
+    .quiz-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+    .question { font-size:1.22rem; font-weight:750; margin:16px 0 5px }
+    .question-bn { font-size:1.08rem; margin:0 0 14px }
+    .options { display:grid; gap:10px }
+    .option { width:100%; text-align:left; color:var(--ink); background:var(--card);
+      border:1px solid var(--line); border-radius:11px; padding:12px 14px }
+    .option:hover:not(:disabled) { border-color:var(--red) }
+    .option:disabled { cursor:default; opacity:1 }
+    .option.correct { color:var(--green); border-color:var(--green); background:var(--green-bg) }
+    .option.wrong { color:var(--wrong); border-color:var(--wrong); background:var(--wrong-bg) }
+    .feedback { border-radius:10px; padding:12px; margin-top:14px }
+    .feedback.correct { color:var(--green); background:var(--green-bg) }
+    .feedback.wrong { color:var(--wrong); background:var(--wrong-bg) }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px }
+    .hidden { display:none !important }
+    footer { border-top:1px solid var(--line); color:var(--muted); text-align:center; padding:18px }
+    @media(max-width:560px) {
+      .topbar-inner { padding:10px; gap:8px }
+      .brand h1 { font-size:.92rem }
+      .brand small { font-size:.75rem }
+      main { padding:14px 11px 36px }
+      .hero,.panel,.quiz-card { padding:16px }
+      .choices { grid-template-columns:1fr }
+      .choice-card { min-height:0 }
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="flag" aria-label="Japan flag"></span>
+    <div class="brand">
+      <h1>日本の運転免許クイズ</h1>
+      <small>Japan Driving Quiz · Bangladeshi learner support</small>
+    </div>
+    <button class="button" id="darkButton" type="button" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>日本の運転ルールを学ぼう · জাপানের ট্রাফিক নিয়ম শিখুন</h2>
+    <p class="muted">仮免許（Karimen）と本免許（Honmen）の練習クイズ。প্রশ্ন, উত্তর ও ব্যাখ্যা Japanese এবং বাংলায়।</p>
+    <div class="notice">
+      <strong>練習問題 / অনুশীলনী:</strong>
+      এই প্রশ্নগুলো practice-এর জন্য তৈরি; ২০১০–২০২৬ সালের আসল পরীক্ষার প্রশ্নের archive নয়।
+      নিয়মের বর্তমান সংস্করণ সরকারি উৎস বা আপনার driving school-এর সঙ্গে যাচাই করুন।
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Answered · উত্তর দিয়েছেন</span>
+        <strong id="progressText">0 / 20</strong>
+      </div>
+      <progress id="progressBar" value="0" max="20"></progress>
+    </div>
+  </section>
+
+  <section id="home" class="panel">
+    <h2>試験を選んでください · পরীক্ষা বেছে নিন</h2>
+    <div class="choices">
+      <button class="choice-card" data-test="karimen" type="button">
+        <strong>🚗 仮免許 · Karimen</strong>
+        <span>Provisional license practice<br>仮免許の練習 · প্রভিশনাল লাইসেন্স অনুশীলন</span>
+      </button>
+      <button class="choice-card" data-test="honmen" type="button">
+        <strong>🚘 本免許 · Honmen</strong>
+        <span>Full license practice<br>本免許の練習 · পূর্ণ লাইসেন্স অনুশীলন</span>
+      </button>
+    </div>
+    <p class="muted">এই demo-তে প্রতিটি ভাগে ১০টি করে original practice question আছে।</p>
+  </section>
+
+  <section id="quiz" class="quiz-card hidden" aria-live="polite"></section>
+</main>
+
+<footer>
+  学習用サイトです。公式の試験問題・法律相談ではありません。 ·
+  এটি শেখার সাইট, সরকারি প্রশ্নপত্র বা আইনি পরামর্শ নয়।
+</footer>
+
+<script>
+"use strict";
+
+/* Practice questions written for this learning demo.
+   They are not represented as historical or official exam questions. */
+const questionBank = {
+  karimen: [
+    {
+      ja:"赤信号のとき、車はどうしなければなりませんか。",
+      bn:"লাল বাতি জ্বললে গাড়িচালকের কী করতে হবে?",
+      options:[
+        ["停止線の直前で止まる","স্টপ লাইনের ঠিক আগে থামতে হবে"],
+        ["ゆっくり進む","ধীরে এগোতে হবে"],
+        ["クラクションを鳴らして進む","হর্ন দিয়ে এগোতে হবে"],
+        ["右折なら必ず進める","ডানদিকে গেলে সব সময় এগোনো যায়"]
+      ], answer:0,
+      expJa:"赤信号では、停止線の直前で停止します。信号や標識に従ってください。",
+      expBn:"লাল বাতিতে স্টপ লাইনের ঠিক আগে থামতে হয়। সিগন্যাল ও চিহ্ন মানুন।"
+    },
+    {
+      ja:"横断歩道を渡ろうとしている歩行者がいるとき、運転者はどうしますか。",
+      bn:"ক্রসওয়াক পার হতে প্রস্তুত পথচারী থাকলে চালকের কী করা উচিত?",
+      options:[
+        ["横断歩道の手前で止まり、歩行者を先に通す","ক্রসওয়াকের আগে থেমে পথচারীকে আগে যেতে দিতে হবে"],
+        ["速度を上げて先に通る","গতি বাড়িয়ে আগে চলে যেতে হবে"],
+        ["クラクションを鳴らす","হর্ন বাজাতে হবে"],
+        ["歩行者がいる側を避けて進む","পথচারীর পাশ দিয়ে চলে যেতে হবে"]
+      ], answer:0,
+      expJa:"横断歩道では歩行者の安全を優先します。渡ろうとする人がいる場合は停止して譲ります。",
+      expBn:"ক্রসওয়াকে পথচারীর নিরাপত্তা আগে। কেউ পার হতে চাইলে থেমে তাকে যেতে দিন।"
+    },
+    {
+      ja:"「止まれ」の標識がある交差点では、どうしますか。",
+      bn:"‘থামুন’ (止まれ) চিহ্ন থাকা মোড়ে কী করতে হবে?",
+      options:[
+        ["停止線の直前で一時停止し、安全を確認する","স্টপ লাইনের আগে সম্পূর্ণ থেমে নিরাপত্তা দেখে নিতে হবে"],
+        ["左右を見ながら止まらず進む","ডানে-বাঁয়ে দেখে না থেমে যেতে হবে"],
+        ["歩行者がいないときだけ速く進む","পথচারী না থাকলে দ্রুত যেতে হবে"],
+        ["交差点の中で止まる","মোড়ের মাঝখানে থামতে হবে"]
+      ], answer:0,
+      expJa:"一時停止の標識では、停止線の直前で車輪を止めてから安全を確認します。",
+      expBn:"止まれ চিহ্নে স্টপ লাইনের আগে গাড়ি সম্পূর্ণ থামিয়ে তারপর নিরাপত্তা যাচাই করুন।"
+    },
+    {
+      ja:"踏切を通る前に、基本的に何をしますか。",
+      bn:"রেলক্রসিং পার হওয়ার আগে সাধারণত কী করতে হয়?",
+      options:[
+        ["直前で一時停止し、安全を確かめる","রেলক্রসিংয়ের আগে থেমে নিরাপত্তা যাচাই করতে হবে"],
+        ["警報機が鳴る前なら速度を上げる","সতর্ক ঘণ্টা বাজার আগে গতি বাড়াতে হবে"],
+        ["線路上で左右を確認する","রেললাইনের ওপর গিয়ে ডানে-বাঁয়ে দেখতে হবে"],
+        ["前の車に近づいて続けて進む","সামনের গাড়ির খুব কাছে থেকে যেতে হবে"]
+      ], answer:0,
+      expJa:"踏切では手前で停止し、安全を確認します。警報機が鳴っているときや遮断機が下りているときは進入しません。",
+      expBn:"রেলক্রসিংয়ের আগে থেমে নিরাপত্তা দেখুন। ঘণ্টা বাজলে বা গেট নামলে প্রবেশ করবেন না।"
+    },
+    {
+      ja:"シートベルトについて、正しいものはどれですか。",
+      bn:"সিটবেল্ট সম্পর্কে কোনটি সঠিক?",
+      options:[
+        ["運転者だけが着用すればよい","শুধু চালক পরলেই যথেষ্ট"],
+        ["車に乗る人は、座席に応じてシートベルトを着用する","গাড়ির যাত্রীদের আসন অনুযায়ী সিটবেল্ট পরতে হবে"],
+        ["近い距離なら着用しなくてよい","অল্প দূরত্বে না পরলেও চলে"],
+        ["後部座席では必要ない","পেছনের আসনে দরকার নেই"]
+      ], answer:1,
+      expJa:"シートベルトは命を守る大切な装置です。車に乗る人は正しく着用します。",
+      expBn:"সিটবেল্ট জীবন রক্ষায় গুরুত্বপূর্ণ। গাড়িতে থাকা প্রত্যেককে যথাযথভাবে পরতে হবে।"
+    },
+    {
+      ja:"お酒を飲んだ後の運転について、正しいものはどれですか。",
+      bn:"মদ্যপানের পর গাড়ি চালানো সম্পর্কে কোনটি সঠিক?",
+      options:[
+        ["少しなら運転してよい","অল্প পান করলে চালানো যায়"],
+        ["水を飲めばすぐ運転できる","পানি খেলেই সঙ্গে সঙ্গে চালানো যায়"],
+        ["飲酒後は運転してはいけない","মদ্যপানের পর গাড়ি চালানো যাবে না"],
+        ["夜だけ運転してはいけない","শুধু রাতে চালানো যাবে না"]
+      ], answer:2,
+      expJa:"飲酒運転は禁止されています。飲酒した場合は運転せず、別の交通手段を使います。",
+      expBn:"মদ্যপ অবস্থায় গাড়ি চালানো নিষিদ্ধ। পান করলে চালাবেন না; অন্য যাতায়াতের ব্যবস্থা করুন।"
+    },
+    {
+      ja:"運転中に携帯電話を手に持って通話したり、画面を見たりするのはどうですか。",
+      bn:"চালানোর সময় হাতে ফোন ধরে কথা বলা বা স্ক্রিন দেখা কি ঠিক?",
+      options:[
+        ["安全なら問題ない","নিরাপদ মনে হলে সমস্যা নেই"],
+        ["交通状況に注意を妨げるのでしてはいけない","মনোযোগ নষ্ট করে, তাই করা যাবে না"],
+        ["低速ならいつでもよい","ধীরে চালালে সব সময় করা যায়"],
+        ["赤信号のときは必ずよい","লাল বাতিতে সব সময় করা যায়"]
+      ], answer:1,
+      expJa:"運転中の携帯電話の使用は危険です。安全な場所に停車してから操作します。",
+      expBn:"চালানোর সময় ফোন ব্যবহার বিপজ্জনক। নিরাপদ স্থানে গাড়ি থামিয়ে তারপর ফোন ব্যবহার করুন।"
+    },
+    {
+      ja:"雨の日に道路が濡れているとき、どの運転が安全ですか。",
+      bn:"বৃষ্টিতে রাস্তা ভেজা থাকলে কোনভাবে চালানো নিরাপদ?",
+      options:[
+        ["速度を落とし、車間距離を長くする","গতি কমিয়ে সামনে গাড়ির সঙ্গে দূরত্ব বাড়ানো"],
+        ["いつもより近くを走る","স্বাভাবিকের চেয়ে কাছে চলা"],
+        ["急ブレーキを何度もかける","বারবার হঠাৎ ব্রেক করা"],
+        ["水たまりに向かって加速する","পানির গর্তের দিকে গতি বাড়ানো"]
+      ], answer:0,
+      expJa:"濡れた路面では止まるまでの距離が長くなることがあります。速度を落とし、十分な車間距離を取ります。",
+      expBn:"ভেজা রাস্তায় থামতে বেশি দূরত্ব লাগতে পারে। গতি কমিয়ে পর্যাপ্ত দূরত্ব রাখুন।"
+    },
+    {
+      ja:"緊急自動車が近づいてきたとき、どうしますか。",
+      bn:"জরুরি সেবা-যান কাছে এলে কী করবেন?",
+      options:[
+        ["進路を譲り、安全な場所で妨げないようにする","নিরাপদভাবে পথ ছেড়ে জরুরি গাড়িকে যেতে দিতে হবে"],
+        ["速度を上げて前を走る","গতি বাড়িয়ে সামনে যেতে হবে"],
+        ["道路の真ん中で止まる","রাস্তার মাঝখানে থামতে হবে"],
+        ["後ろについて走る","পেছনে পেছনে যেতে হবে"]
+      ], answer:0,
+      expJa:"緊急自動車の進行を妨げないよう、周囲の安全を確認して進路を譲ります。",
+      expBn:"জরুরি গাড়ির পথ আটকাবেন না। আশপাশ দেখে নিরাপদে পথ ছেড়ে দিন।"
+    },
+    {
+      ja:"車を発進させる前に、最初に大切なことは何ですか。",
+      bn:"গাড়ি চালু করে চলার আগে কোন বিষয়টি গুরুত্বপূর্ণ?",
+      options:[
+        ["周囲の安全を確認する","চারপাশের নিরাপত্তা যাচাই করা"],
+        ["すぐにクラクションを鳴らす","সঙ্গে সঙ্গে হর্ন বাজানো"],
+        ["ミラーを見ずに発進する","আয়না না দেখে চলা শুরু করা"],
+        ["急に道路へ出る","হঠাৎ রাস্তায় উঠে পড়া"]
+      ], answer:0,
+      expJa:"発進前にミラーや目視で周囲を確認し、安全を確かめてから動きます。",
+      expBn:"চলা শুরুর আগে আয়না ও সরাসরি দেখে চারপাশের নিরাপত্তা যাচাই করুন।"
+    }
+  ],
+
+  honmen: [
+    {
+      ja:"信号機の黄色の灯火が点灯したとき、どうしますか。",
+      bn:"ট্রাফিক সিগন্যালের হলুদ বাতি জ্বললে কী করবেন?",
+      options:[
+        ["安全に停止できる場合は停止する","নিরাপদে থামা সম্ভব হলে থামতে হবে"],
+        ["必ず速度を上げて進む","অবশ্যই গতি বাড়িয়ে যেতে হবে"],
+        ["後続車がいれば必ず進む","পেছনে গাড়ি থাকলে অবশ্যই যেতে হবে"],
+        ["どの方向にも自由に進める","যেকোনো দিকে অবাধে যাওয়া যায়"]
+      ], answer:0,
+      expJa:"黄色は原則として停止です。ただし、安全に停止できない場合などは周囲に注意して進みます。",
+      expBn:"হলুদ বাতিতে সাধারণ নিয়ম হলো থামা। তবে নিরাপদে থামা অসম্ভব হলে পরিস্থিতি দেখে সতর্কভাবে এগোন।"
+    },
+    {
+      ja:"赤色の点滅信号では、どうしますか。",
+      bn:"লাল ঝলকানো সিগন্যালে কী করতে হবে?",
+      options:[
+        ["一時停止して安全を確認する","থেমে নিরাপত্তা যাচাই করতে হবে"],
+        ["徐行だけで必ず進む","শুধু ধীরে চলেই যেতে হবে"],
+        ["速度を上げる","গতি বাড়াতে হবে"],
+        ["信号を無視する","সিগন্যাল উপেক্ষা করতে হবে"]
+      ], answer:0,
+      expJa:"赤色の点滅信号では停止位置で一時停止し、安全を確認します。",
+      expBn:"লাল ঝলকানো সিগন্যালে নির্ধারিত স্থানে থেমে নিরাপত্তা যাচাই করুন।"
+    },
+    {
+      ja:"高速道路で故障し、車を路肩に止めました。まず何をしますか。",
+      bn:"এক্সপ্রেসওয়েতে গাড়ি নষ্ট হয়ে পাশে থামালে প্রথমে কী করবেন?",
+      options:[
+        ["後続車に知らせ、人の安全を確保して助けを呼ぶ","পেছনের গাড়িকে সতর্ক করে যাত্রীদের নিরাপদে সরিয়ে সাহায্য ডাকতে হবে"],
+        ["車の後ろで待つ","গাড়ির ঠিক পেছনে দাঁড়িয়ে অপেক্ষা করা"],
+        ["車線に戻って修理する","চলন্ত লেনে ফিরে মেরামত করা"],
+        ["車を置いたまま歩いて横断する","গাড়ি রেখে হেঁটে রাস্তা পার হওয়া"]
+      ], answer:0,
+      expJa:"故障時は二次事故を防ぐことが大切です。安全な場所へ避難し、停止表示器材などで後続車に知らせて救援を求めます。",
+      expBn:"বিকল হলে দ্বিতীয় দুর্ঘটনা ঠেকানো জরুরি। নিরাপদ স্থানে যান, সতর্কীকরণ ব্যবস্থা ব্যবহার করুন এবং সাহায্য ডাকুন।"
+    },
+    {
+      ja:"前の車との車間距離は、どのように取るのがよいですか。",
+      bn:"সামনের গাড়ির সঙ্গে কীভাবে নিরাপদ দূরত্ব রাখবেন?",
+      options:[
+        ["すぐ止まれるだけの十分な距離を取る","প্রয়োজনে থামতে পারার মতো পর্যাপ্ত দূরত্ব রাখা"],
+        ["前の車にできるだけ近づく","সামনের গাড়ির যত কাছে সম্ভব থাকা"],
+        ["速度に関係なく同じ短い距離にする","গতি যাই হোক একই ছোট দূরত্ব রাখা"],
+        ["夜だけ距離を取る","শুধু রাতে দূরত্ব রাখা"]
+      ], answer:0,
+      expJa:"速度、路面、天候などに応じて、追突を避けられる十分な車間距離を保ちます。",
+      expBn:"গতি, রাস্তা ও আবহাওয়া অনুযায়ী এমন দূরত্ব রাখুন যাতে ধাক্কা না দিয়ে থামতে পারেন।"
+    },
+    {
+      ja:"荷物を車に積むとき、正しい方法はどれですか。",
+      bn:"গাড়িতে মালপত্র তোলার সঠিক পদ্ধতি কোনটি?",
+      options:[
+        ["運転の妨げにならないよう固定する","চালনায় বাধা না হয় এমনভাবে মালপত্র বেঁধে রাখা"],
+        ["後ろが見えなくても高く積む","পেছন দেখা না গেলেও উঁচু করে তোলা"],
+        ["走行中に動くように置く","চলার সময় নড়বে এমনভাবে রাখা"],
+        ["運転席の足元に置く","চালকের পায়ের কাছে রাখা"]
+      ], answer:0,
+      expJa:"荷物は視界や運転操作を妨げないように積み、走行中に動かないよう固定します。",
+      expBn:"মালপত্র এমনভাবে রাখুন যাতে দৃশ্য বা নিয়ন্ত্রণে বাধা না দেয়, এবং চলার সময় নড়ে না যায়।"
+    },
+    {
+      ja:"霧で前が見えにくいとき、安全な運転はどれですか。",
+      bn:"কুয়াশায় সামনে স্পষ্ট দেখা না গেলে কোন চালনা নিরাপদ?",
+      options:[
+        ["速度を落とし、必要に応じてライトを使う","গতি কমিয়ে প্রয়োজনমতো লাইট ব্যবহার করা"],
+        ["ハイビームだけで速度を上げる","শুধু হাই-বিম দিয়ে গতি বাড়ানো"],
+        ["前の車に近づいて走る","সামনের গাড়ির খুব কাছে চলা"],
+        ["道路の中央を走る","রাস্তার মাঝখানে চলা"]
+      ], answer:0,
+      expJa:"視界が悪いときは速度を落とし、車間距離を保ちます。状況に合った灯火を使います。",
+      expBn:"দৃশ্যমানতা কম হলে গতি কমান এবং দূরত্ব রাখুন। পরিস্থিতি অনুযায়ী লাইট ব্যবহার করুন।"
+    },
+    {
+      ja:"歩道を横切って道路へ出るとき、どうしますか。",
+      bn:"ফুটপাত পার হয়ে রাস্তায় ঢোকার সময় কী করবেন?",
+      options:[
+        ["歩道の手前で止まり、歩行者の安全を確認する","ফুটপাতের আগে থেমে পথচারীর নিরাপত্তা যাচাই করা"],
+        ["歩道では歩行者が車を避ける","ফুটপাতে পথচারী গাড়িকে এড়াবে"],
+        ["確認せずに道路へ出る","না দেখে রাস্তায় ঢোকা"],
+        ["クラクションを鳴らし続けて進む","হর্ন বাজাতে বাজাতে এগোনো"]
+      ], answer:0,
+      expJa:"歩道を横切る前に停止し、歩行者の通行を妨げないよう安全を確認します。",
+      expBn:"ফুটপাত অতিক্রমের আগে থামুন এবং পথচারীর চলাচলে বাধা না দিয়ে নিরাপত্তা দেখে নিন।"
+    },
+    {
+      ja:"車を駐車するとき、必ず気をつけることは何ですか。",
+      bn:"গাড়ি পার্ক করার সময় কোন বিষয়টি অবশ্যই খেয়াল রাখবেন?",
+      options:[
+        ["交通の妨げや危険にならない場所を選ぶ","যান চলাচলে বাধা বা বিপদ হবে না এমন স্থান বেছে নেওয়া"],
+        ["交差点の真ん中に止める","মোড়ের মাঝখানে থামানো"],
+        ["標識を確認しなくてよい","চিহ্ন যাচাইয়ের দরকার নেই"],
+        ["ほかの車の出入口をふさぐ","অন্য গাড়ির প্রবেশপথ বন্ধ করা"]
+      ], answer:0,
+      expJa:"駐車できる場所か標識などを確認し、ほかの交通や歩行者の妨げにならないようにします。",
+      expBn:"পার্কিং বৈধ কি না চিহ্ন দেখে নিশ্চিত হোন; যানবাহন ও পথচারীর পথ আটকাবেন না।"
+    },
+    {
+      ja:"疲れや眠気を感じたとき、どうするのが安全ですか。",
+      bn:"ক্লান্তি বা ঘুম পেলে নিরাপদ কাজ কোনটি?",
+      options:[
+        ["安全な場所に停車して休む","নিরাপদ স্থানে গাড়ি থামিয়ে বিশ্রাম নেওয়া"],
+        ["窓を開けて速度を上げる","জানালা খুলে গতি বাড়ানো"],
+        ["我慢して運転を続ける","জোর করে চালিয়ে যাওয়া"],
+        ["携帯電話を見て眠気を覚ます","ফোন দেখে ঘুম তাড়ানো"]
+      ], answer:0,
+      expJa:"疲労や眠気は判断や反応を遅らせます。安全な場所で休憩してから運転します。",
+      expBn:"ক্লান্তি ও ঘুম সিদ্ধান্ত এবং প্রতিক্রিয়া ধীর করে। নিরাপদ স্থানে বিশ্রাম নিয়ে তারপর চালান।"
+    },
+    {
+      ja:"交通事故が起きたとき、まず大切な対応はどれですか。",
+      bn:"সড়ক দুর্ঘটনা ঘটলে প্রথমে কোন পদক্ষেপ গুরুত্বপূর্ণ?",
+      options:[
+        ["車を安全に止め、負傷者を救護して警察などへ連絡する","নিরাপদে থেমে আহতকে সাহায্য করে পুলিশসহ জরুরি সেবায় যোগাযোগ করা"],
+        ["何もせず現場を離れる","কিছু না করে ঘটনাস্থল ছেড়ে যাওয়া"],
+        ["相手と話さず走り去る","অপর পক্ষের সঙ্গে কথা না বলে চলে যাওয়া"],
+        ["道路の真ん中で写真を撮る","রাস্তার মাঝখানে ছবি তোলা"]
+      ], answer:0,
+      expJa:"事故時は停止し、負傷者の救護と道路上の危険防止を行い、警察へ報告します。",
+      expBn:"দুর্ঘটনায় থামুন, আহতকে সহায়তা করুন, রাস্তার বিপদ কমান এবং পুলিশকে জানান।"
+    }
+  ]
+};
+
+const STORAGE_KEY = "japan-driving-quiz-progress-v1";
+const completed = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+let activeTest = "";
+let questions = [];
+let questionIndex = 0;
+let score = 0;
+let answered = false;
+
+const $ = selector => document.querySelector(selector);
+const escapeHtml = text => String(text).replace(/[&<>"']/g, ch =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch])
+);
+
+function totalQuestions() {
+  return Object.values(questionBank).reduce((sum, list) => sum + list.length, 0);
+}
+function updateProgress() {
+  const total = totalQuestions();
+  const count = Math.min(completed.size, total);
+  $("#progressText").textContent = `${count} / ${total}`;
+  $("#progressBar").max = total;
+  $("#progressBar").value = count;
+}
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...completed]));
+  updateProgress();
+}
+function shuffle(list) {
+  const copy = [...list];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+function startTest(testName) {
+  activeTest = testName;
+  questions = shuffle(questionBank[testName]);
+  questionIndex = 0;
+  score = 0;
+  answered = false;
+  $("#home").classList.add("hidden");
+  $("#quiz").classList.remove("hidden");
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function renderQuestion() {
+  const quiz = $("#quiz");
+  if (questionIndex >= questions.length) {
+    quiz.innerHTML = `
+      <h2>結果 · ফলাফল</h2>
+      <p class="question">${activeTest === "karimen" ? "仮免許 · Karimen" : "本免許 · Honmen"}</p>
+      <p><strong>${score} / ${questions.length}</strong> — আপনার সঠিক উত্তর</p>
+      <div class="actions">
+        <button class="button primary" id="restart">もう一度 · আবার চেষ্টা</button>
+        <button class="button" id="goHome">試験を選ぶ · পরীক্ষা বাছুন</button>
+      </div>`;
+    $("#restart").addEventListener("click", () => startTest(activeTest));
+    $("#goHome").addEventListener("click", goHome);
+    return;
+  }
+
+  const item = questions[questionIndex];
+  const testLabel = activeTest === "karimen" ? "仮免許 · Karimen" : "本免許 · Honmen";
+  quiz.innerHTML = `
+    <div class="quiz-head">
+      <span class="muted">${escapeHtml(testLabel)}</span>
+      <span class="muted">Question ${questionIndex + 1} / ${questions.length} · Score ${score}</span>
+    </div>
+    <div class="question">${escapeHtml(item.ja)}</div>
+    <p class="question-bn" lang="bn">${escapeHtml(item.bn)}</p>
+    <div class="options">
+      ${item.options.map((option, i) => `
+        <button class="option" data-option="${i}" type="button">
+          <strong>${String.fromCharCode(65 + i)}.</strong>
+          ${escapeHtml(option[0])}<br><span lang="bn">${escapeHtml(option[1])}</span>
+        </button>`).join("")}
+    </div>
+    <div id="feedback"></div>
+    <div class="actions" id="nextArea"></div>`;
+
+  quiz.querySelectorAll(".option").forEach(button => {
+    button.addEventListener("click", () => answerQuestion(Number(button.dataset.option)));
+  });
+}
+function answerQuestion(selected) {
+  if (answered) return;
+  answered = true;
+  const item = questions[questionIndex];
+  const correct = selected === item.answer;
+  if (correct) score++;
+  completed.add(`${activeTest}-${questionIndex}`);
+  saveProgress();
+
+  $("#quiz").querySelectorAll(".option").forEach((button, i) => {
+    button.disabled = true;
+    if (i === item.answer) button.classList.add("correct");
+    else if (i === selected) button.classList.add("wrong");
+  });
+
+  $("#feedback").innerHTML = `
+    <div class="feedback ${correct ? "correct" : "wrong"}">
+      <strong>${correct ? "正解 · সঠিক উত্তর!" : "不正解 · ভুল উত্তর"}</strong><br>
+      <strong>${escapeHtml(item.options[item.answer][0])}</strong>
+      <span lang="bn">${escapeHtml(item.options[item.answer][1])}</span>
+      <hr>
+      <div>${escapeHtml(item.expJa)}</div>
+      <div lang="bn">${escapeHtml(item.expBn)}</div>
+    </div>`;
+  $("#nextArea").innerHTML = `
+    <button class="button primary" id="nextButton" type="button">
+      ${questionIndex + 1 === questions.length ? "結果を見る · ফলাফল দেখুন" : "次の問題 · পরের প্রশ্ন"}
+    </button>`;
+  $("#nextButton").addEventListener("click", () => {
+    questionIndex++;
+    answered = false;
+    renderQuestion();
+  });
+}
+function goHome() {
+  $("#quiz").classList.add("hidden");
+  $("#home").classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll("[data-test]").forEach(button => {
+  button.addEventListener("click", () => startTest(button.dataset.test));
+});
+$("#darkButton").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("japan-driving-dark", document.body.classList.contains("dark") ? "1" : "0");
+  $("#darkButton").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+});
+if (localStorage.getItem("japan-driving-dark") === "1") {
+  document.body.classList.add("dark");
+  $("#darkButton").textContent = "☀️";
+}
+updateProgress();
+</script>
+</body>
+</html>
